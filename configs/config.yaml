@@ -1,0 +1,103 @@
+# Hand Sign Detection Configuration
+
+# ─── Data ──────────────────────────────────────────────────────────────────
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  yolo_labels_dir: "data/yolo_labels"
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  image_size: 640           # YOLO input size
+  num_classes: 36           # 26 ASL letters + 10 digits
+  class_names:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    - G
+    - H
+    - I
+    - J
+    - K
+    - L
+    - M
+    - N
+    - O
+    - P
+    - Q
+    - R
+    - S
+    - T
+    - U
+    - V
+    - W
+    - X
+    - Y
+    - Z
+    - "0"
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+    - "5"
+    - "6"
+    - "7"
+    - "8"
+    - "9"
+
+# ─── YOLO26 Detection Model ─────────────────────────────────────────────────
+detector:
+  model: "yolo26n.pt"       # Nano variant — fastest for real-time
+  confidence: 0.5
+  iou_threshold: 0.45
+  device: "auto"            # "auto" picks GPU if available, else CPU
+
+# ─── MediaPipe Tasks API ────────────────────────────────────────────────────
+mediapipe:
+  model_asset_path: "models/hand_landmarker.task"
+  num_hands: 1
+  min_hand_detection_confidence: 0.5
+  min_hand_presence_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+# ─── Transformer Classifier ─────────────────────────────────────────────────
+classifier:
+  input_dim: 63             # 21 landmarks × 3 (x, y, z)
+  num_classes: 36
+  d_model: 128              # Transformer embedding dimension
+  nhead: 4                  # Attention heads
+  num_layers: 2             # Transformer encoder layers
+  dim_feedforward: 256
+  dropout: 0.1
+  saved_model: "models/classifier.onnx"
+
+# ─── Training ───────────────────────────────────────────────────────────────
+training:
+  epochs: 100
+  batch_size: 64
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-4
+  early_stopping_patience: 15
+  device: "auto"
+  mlflow_experiment: "hand-sign-classifier"
+
+# ─── Inference Pipeline ─────────────────────────────────────────────────────
+inference:
+  confidence_threshold: 0.7
+  smoothing_window: 5       # Rolling majority vote over last N frames
+  pause_gesture: "blank"    # Gesture name that triggers word break
+  pause_hold_seconds: 1.0   # How long to hold pause gesture
+
+# ─── API ────────────────────────────────────────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+
+# ─── Streamlit ──────────────────────────────────────────────────────────────
+app:
+  title: "ASL Hand Sign Detection"
+  port: 8501

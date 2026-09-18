@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts (large files — use GitHub Releases for weights)
+models/*.pt
+models/*.onnx
+models/*.pth
+mlruns/
+
+# Data (raw data is large — document download steps in README)
+data/raw/*
+data/processed/*
+data/yolo_labels/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/yolo_labels/.gitkeep
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Ruff / linting cache
+.ruff_cache/
+
+# pytest
+.pytest_cache/
