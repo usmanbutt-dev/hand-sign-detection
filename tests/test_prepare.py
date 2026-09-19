@@ -11,12 +11,11 @@ import pytest
 from src.data.prepare import (
     ALL_COLS,
     LANDMARK_COLS,
-    normalize_keypoints,
-    load_npy_dataset,
     load_csv_dataset,
+    load_npy_dataset,
+    normalize_keypoints,
     prepare_keypoints_csv,
 )
-
 
 # ─── Normalization Tests ─────────────────────────────────────────────────────
 

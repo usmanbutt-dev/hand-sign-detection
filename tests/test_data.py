@@ -14,8 +14,6 @@ We can test our dataset code WITHOUT having real images by creating
 tiny fake images in a temporary directory.
 """
 
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -29,7 +27,6 @@ from src.data.dataset import (
     KeypointDataset,
     RawImageDataset,
 )
-
 
 # ─── Class Mapping Tests ─────────────────────────────────────────────────────
 

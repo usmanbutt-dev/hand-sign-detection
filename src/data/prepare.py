@@ -176,7 +176,7 @@ def load_npy_dataset(
                 rows.append([class_name] + normalized.tolist())
                 loaded += 1
 
-            except Exception as e:
+            except Exception:
                 skipped += 1
                 continue
 
@@ -329,10 +329,10 @@ def prepare_keypoints_csv(
     # (otherwise you'd have duplicate indices from each source)
     merged = pd.concat(all_frames, ignore_index=True)
 
-    print(f"\n📊 Merged dataset:")
+    print("\n📊 Merged dataset:")
     print(f"   Total samples: {len(merged):,}")
     print(f"   Classes present: {sorted(merged['class'].unique())}")
-    print(f"   Samples per class:")
+    print("   Samples per class:")
 
     dist = merged["class"].value_counts().sort_index()
     for cls, count in dist.items():
@@ -345,7 +345,7 @@ def prepare_keypoints_csv(
     imbalance_ratio = max_count / max(min_count, 1)
     if imbalance_ratio > 3:
         print(f"\n   ⚠️  Class imbalance ratio: {imbalance_ratio:.1f}x")
-        print(f"      Consider augmenting underrepresented classes.")
+        print("      Consider augmenting underrepresented classes.")
     else:
         print(f"\n   ✅ Class balance ratio: {imbalance_ratio:.1f}x (acceptable)")
 
@@ -397,7 +397,7 @@ if __name__ == "__main__":
     npy_dir = auto_find_npy_dir()
     csv_files = auto_find_csv_files()
 
-    print(f"🔍 Auto-discovered:")
+    print("🔍 Auto-discovered:")
     print(f"   .npy dir: {npy_dir}")
     print(f"   CSV files: {[str(f) for f in csv_files]}")
 

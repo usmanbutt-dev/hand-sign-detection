@@ -1,5 +1,6 @@
 """Quick runner to prepare the keypoints CSV from downloaded datasets."""
 import sys
+
 sys.path.insert(0, ".")
 
 from src.data.prepare import prepare_keypoints_csv

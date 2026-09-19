@@ -52,7 +52,6 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-
 # ─── Class Label Mapping ────────────────────────────────────────────────────
 # CONCEPT: Class indices
 # Neural networks output numbers, not strings.
@@ -342,6 +341,7 @@ def make_image_dataloaders(
     - 32 or 64 are common defaults.
     """
     from sklearn.model_selection import train_test_split
+
     from src.data.augment import build_train_transforms, build_val_transforms
 
     # Load the full dataset to get all sample paths
@@ -398,7 +398,7 @@ def make_image_dataloaders(
         test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers
     )
 
-    print(f"\n📦 DataLoaders ready:")
+    print("\n📦 DataLoaders ready:")
     print(f"   Train:      {len(train_ds):,} samples ({len(train_loader)} batches)")
     print(f"   Validation: {len(val_ds):,} samples ({len(val_loader)} batches)")
     print(f"   Test:       {len(test_ds):,} samples ({len(test_loader)} batches)\n")
@@ -449,7 +449,7 @@ def make_keypoint_dataloaders(
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
 
-    print(f"\n📦 Keypoint DataLoaders ready:")
+    print("\n📦 Keypoint DataLoaders ready:")
     print(f"   Train: {len(train_ds):,} | Val: {len(val_ds):,} | Test: {len(test_ds):,}\n")
 
     return train_loader, val_loader, test_loader

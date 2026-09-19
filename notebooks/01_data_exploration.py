@@ -37,9 +37,8 @@ sys.path.insert(0, str(Path("..").resolve()))
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import Counter
 
-from src.data.dataset import RawImageDataset, CLASSES, CLASS_TO_IDX
+from src.data.dataset import CLASS_TO_IDX, RawImageDataset
 from src.data.download import print_dataset_summary
 from src.utils.config import load_config
 

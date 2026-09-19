@@ -24,7 +24,6 @@ import numpy as np
 # Only import matplotlib/cv2 if available (not needed for just training)
 try:
     import matplotlib.pyplot as plt
-    import matplotlib.patches as patches
     MATPLOTLIB_OK = True
 except ImportError:
     MATPLOTLIB_OK = False
@@ -173,11 +172,11 @@ def plot_keypoints_2d(
     fingertips = [4, 8, 12, 16, 20]
     for i, (xi, yi) in enumerate(zip(x, y)):
         if i == 0:
-            color, size, label = "red", 120, "Wrist"
+            color, size = "red", 120
         elif i in fingertips:
-            color, size, label = "blue", 80, LANDMARK_NAMES[i]
+            color, size = "blue", 80
         else:
-            color, size, label = "green", 40, ""
+            color, size = "green", 40
         ax.scatter(xi, yi, c=color, s=size, zorder=5)
 
     # Invert y-axis: in image coordinates, y increases downward
@@ -244,7 +243,6 @@ def plot_confusion_matrix(
         raise ImportError("Install matplotlib: uv pip install matplotlib")
 
     from sklearn.metrics import confusion_matrix
-    import matplotlib.colors as mcolors
 
     cm = confusion_matrix(y_true, y_pred)
 
