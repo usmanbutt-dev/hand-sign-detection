@@ -37,8 +37,20 @@ run-webcam:  ## Run real-time webcam inference (no UI)
 capture:  ## Collect webcam images for a sign class
 	python src/data/capture.py
 
+.PHONY: download-asl
+download-asl:  ## Download ASL Alphabet dataset from Kaggle
+	python src/data/download.py --dataset asl
+
+.PHONY: data-summary
+data-summary:  ## Print dataset summary (class counts)
+	python src/data/download.py
+
+.PHONY: prepare-data
+prepare-data:  ## Convert downloaded datasets into unified keypoints.csv
+	python src/data/prepare.py
+
 .PHONY: extract-keypoints
-extract-keypoints:  ## Run MediaPipe keypoint extraction on raw images
+extract-keypoints:  ## Run MediaPipe keypoint extraction on raw images (Phase 4)
 	python src/data/dataset.py
 
 # ─── Quality ────────────────────────────────────────────────────────────────

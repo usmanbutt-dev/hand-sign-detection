@@ -29,6 +29,9 @@ dependencies = [
     "scikit-learn>=1.5.0",
     "pyyaml>=6.0.2",
     "tqdm>=4.66.0",
+    "albumentations>=1.4.0",    # Fast image augmentation
+    "matplotlib>=3.9.0",        # Plotting for notebooks
+    "kaggle>=2.2.0",            # Dataset download CLI
 ]
 
 [project.optional-dependencies]
