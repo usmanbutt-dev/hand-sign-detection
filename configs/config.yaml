@@ -6,8 +6,8 @@ data:
   processed_dir: "data/processed"
   yolo_labels_dir: "data/yolo_labels"
   train_split: 0.8
-  val_split: 0.1
-  test_split: 0.1
+  val_split: 0.15
+  test_split: 0.05
   image_size: 640           # YOLO input size
   num_classes: 26           # Static ASL alphabet labels available in the dataset
   class_names:
@@ -55,6 +55,7 @@ mediapipe:
 
 # ─── Transformer Classifier ─────────────────────────────────────────────────
 classifier:
+  size: "small"
   input_dim: 63             # 21 landmarks × 3 (x, y, z)
   num_classes: 26
   d_model: 128              # Transformer embedding dimension
@@ -66,11 +67,11 @@ classifier:
 
 # ─── Training ───────────────────────────────────────────────────────────────
 training:
-  epochs: 100
-  batch_size: 64
-  learning_rate: 1.0e-3
+  epochs: 50
+  batch_size: 256
+  learning_rate: 3.0e-4
   weight_decay: 1.0e-4
-  early_stopping_patience: 15
+  early_stopping_patience: 10
   device: "auto"
   mlflow_experiment: "hand-sign-classifier"
 

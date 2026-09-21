@@ -7,6 +7,8 @@ utilities thoroughly — without running a full training job in CI.
 
 from __future__ import annotations
 
+import os
+
 import pytest
 import torch
 import torch.nn as nn
@@ -176,6 +178,22 @@ class TestBuildModel:
 # ─── Checkpoint Save/Load Tests ───────────────────────────────────────────────
 
 class TestCheckpoint:
+
+    def test_checkpoint_loader_blocks_pickle_code_execution(self, tmp_path):
+        from src.models.transformer import load_model
+
+        sentinel = tmp_path / "executed.txt"
+
+        class Malicious:
+            def __reduce__(self):
+                return os.system, (f'type nul > "{sentinel}"',)
+
+        ckpt_path = tmp_path / "malicious.pt"
+        torch.save({"payload": Malicious()}, ckpt_path)
+
+        with pytest.raises(Exception):
+            load_model(ckpt_path)
+        assert not sentinel.exists()
 
     def test_save_and_load_produces_same_output(self, tmp_path):
         """

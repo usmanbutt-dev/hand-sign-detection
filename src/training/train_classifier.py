@@ -105,6 +105,7 @@ from src.models.transformer import (
     load_model,
     save_checkpoint,
 )
+from src.utils.config import load_config
 from src.utils.viz import plot_confusion_matrix
 
 
@@ -147,6 +148,24 @@ def format_training_result(result: TrainingResult) -> str:
             f"Test accuracy: {result.test_accuracy:.2%}",
         ]
     )
+
+
+def load_training_defaults(config_path: str | Path) -> dict:
+    """Translate central YAML settings into classifier training arguments."""
+    config = load_config(config_path)
+    training = config["training"]
+    classifier = config["classifier"]
+    data = config["data"]
+    return {
+        "epochs": training["epochs"],
+        "batch_size": training["batch_size"],
+        "lr": training["learning_rate"],
+        "weight_decay": training["weight_decay"],
+        "patience": training["early_stopping_patience"],
+        "model_size": classifier["size"],
+        "val_fraction": data["val_split"],
+        "test_fraction": data["test_split"],
+    }
 
 # ─── Training Utilities ───────────────────────────────────────────────────────
 
@@ -663,15 +682,21 @@ def train(
 if __name__ == "__main__":
     import argparse
 
+    preliminary = argparse.ArgumentParser(add_help=False)
+    preliminary.add_argument("--config", default="configs/config.yaml")
+    preliminary_args, _ = preliminary.parse_known_args()
+    defaults = load_training_defaults(preliminary_args.config)
+
     parser = argparse.ArgumentParser(description="Train ASL Transformer classifier")
+    parser.add_argument("--config", default=preliminary_args.config)
     parser.add_argument("--csv",       default="data/processed/keypoints.csv")
     parser.add_argument("--output",    default="models")
-    parser.add_argument("--size",      default="small", choices=["tiny", "small", "base"])
-    parser.add_argument("--epochs",    type=int,   default=80)
-    parser.add_argument("--batch",     type=int,   default=256)
-    parser.add_argument("--lr",        type=float, default=3e-4)
+    parser.add_argument("--size",      default=defaults["model_size"], choices=["tiny", "small", "base"])
+    parser.add_argument("--epochs",    type=int,   default=defaults["epochs"])
+    parser.add_argument("--batch",     type=int,   default=defaults["batch_size"])
+    parser.add_argument("--lr",        type=float, default=defaults["lr"])
     parser.add_argument("--dropout",   type=float, default=0.1)
-    parser.add_argument("--patience",  type=int,   default=15)
+    parser.add_argument("--patience",  type=int,   default=defaults["patience"])
     parser.add_argument("--run-name",  default=None)
     args = parser.parse_args()
 
@@ -682,8 +707,11 @@ if __name__ == "__main__":
         epochs=args.epochs,
         batch_size=args.batch,
         lr=args.lr,
+        weight_decay=defaults["weight_decay"],
         dropout=args.dropout,
         patience=args.patience,
+        val_fraction=defaults["val_fraction"],
+        test_fraction=defaults["test_fraction"],
         run_name=args.run_name,
     )
 

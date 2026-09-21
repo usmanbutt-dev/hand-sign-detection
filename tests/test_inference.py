@@ -38,10 +38,11 @@ def test_no_hand_is_normal_prediction_state(predictor, monkeypatch):
 
 
 def test_low_confidence_is_filtered(predictor, monkeypatch):
+    raw_keypoints = np.arange(63, dtype=np.float32)
     monkeypatch.setattr(
         pipeline,
         "extract_keypoints_from_frame",
-        lambda *_: np.zeros(63, dtype=np.float32),
+        lambda *_: raw_keypoints,
     )
 
     result = predictor.predict_rgb(np.zeros((32, 32, 3), dtype=np.uint8))
@@ -49,6 +50,7 @@ def test_low_confidence_is_filtered(predictor, monkeypatch):
     assert result.status == "low_confidence"
     assert result.label is None
     assert 0.0 <= result.confidence < 0.99
+    np.testing.assert_array_equal(result.keypoints, raw_keypoints)
 
 
 def test_smoother_returns_majority_of_recent_labels():

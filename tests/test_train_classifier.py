@@ -14,6 +14,7 @@ from src.training.train_classifier import (
     build_optimizer_and_scheduler,
     evaluate,
     format_training_result,
+    load_training_defaults,
     plot_training_history,
 )
 
@@ -101,3 +102,18 @@ def test_format_training_result_accepts_dataclass(tmp_path):
 
     assert "99.20%" in output
     assert str(result.checkpoint_path) in output
+
+
+def test_training_defaults_come_from_project_config():
+    defaults = load_training_defaults("configs/config.yaml")
+
+    assert defaults == {
+        "epochs": 50,
+        "batch_size": 256,
+        "lr": 0.0003,
+        "weight_decay": 0.0001,
+        "patience": 10,
+        "model_size": "small",
+        "val_fraction": 0.15,
+        "test_fraction": 0.05,
+    }

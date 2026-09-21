@@ -75,8 +75,8 @@ class HandSignPredictor:
         confidence_tensor, index_tensor = probabilities.max(dim=0)
         confidence = float(confidence_tensor.item())
         if confidence < self.confidence_threshold:
-            return Prediction("low_confidence", None, confidence, normalized)
+            return Prediction("low_confidence", None, confidence, keypoints)
 
         label = self.class_names[int(index_tensor.item())]
         smoothed = self.smoother.update(label)
-        return Prediction("ok", smoothed, confidence, normalized)
+        return Prediction("ok", smoothed, confidence, keypoints)

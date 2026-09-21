@@ -372,7 +372,7 @@ def load_model(
     device: str | torch.device = "cpu",
 ) -> tuple[HandSignTransformer, dict]:
     """Reconstruct a trained model from its self-describing checkpoint."""
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     required = {
         "checkpoint_version",
         "model_size",
