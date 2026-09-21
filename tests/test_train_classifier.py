@@ -10,8 +10,10 @@ from src.data.dataset import make_keypoint_dataloaders
 from src.models.transformer import build_model
 from src.training.train_classifier import (
     EarlyStopper,
+    TrainingResult,
     build_optimizer_and_scheduler,
     evaluate,
+    format_training_result,
     plot_training_history,
 )
 
@@ -83,3 +85,19 @@ def test_plot_training_history_writes_png(tmp_path):
 
     assert plot_training_history(history, output) == output
     assert output.stat().st_size > 0
+
+
+def test_format_training_result_accepts_dataclass(tmp_path):
+    result = TrainingResult(
+        checkpoint_path=tmp_path / "model.pt",
+        metrics_path=tmp_path / "metrics.json",
+        confusion_matrix_path=tmp_path / "confusion.png",
+        history_path=tmp_path / "history.png",
+        best_epoch=45,
+        test_accuracy=0.992,
+    )
+
+    output = format_training_result(result)
+
+    assert "99.20%" in output
+    assert str(result.checkpoint_path) in output

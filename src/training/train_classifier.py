@@ -136,6 +136,18 @@ class EarlyStopper:
             self.stale_epochs += 1
         return self.stale_epochs >= self.patience
 
+
+def format_training_result(result: TrainingResult) -> str:
+    """Format the typed training result for CLI output."""
+    return "\n".join(
+        [
+            f"Checkpoint: {result.checkpoint_path}",
+            f"Metrics: {result.metrics_path}",
+            f"Best epoch: {result.best_epoch}",
+            f"Test accuracy: {result.test_accuracy:.2%}",
+        ]
+    )
+
 # ─── Training Utilities ───────────────────────────────────────────────────────
 
 def get_device() -> torch.device:
@@ -678,5 +690,4 @@ if __name__ == "__main__":
     print(f"\n{'='*40}")
     print("  Final Results")
     print(f"{'='*40}")
-    for k, v in metrics.items():
-        print(f"  {k}: {v}")
+    print(format_training_result(metrics))

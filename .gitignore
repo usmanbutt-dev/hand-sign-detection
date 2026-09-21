@@ -22,6 +22,7 @@ env/
 models/*.pt
 models/*.onnx
 models/*.pth
+!models/hand_sign_transformer.pt
 mlruns/
 mlflow.db
 
