@@ -1,8 +1,24 @@
 name: CI
 
+# CONCEPT: GitHub Actions
+# --------------------------
+# GitHub Actions is a CI/CD (Continuous Integration / Continuous Deployment)
+# platform built into GitHub. Every time code is pushed, it:
+#   1. Spins up a fresh virtual machine (ubuntu-latest)
+#   2. Runs the steps defined below
+#   3. Reports pass ✅ or fail ❌ on the PR / commit
+#
+# CI = "Continuous Integration" — automatically verify every commit doesn't
+# break existing tests or code quality rules. This catches bugs before they
+# reach the main branch.
+#
+# Why this matters for your portfolio:
+# Having a green CI badge on your GitHub repo shows employers you care
+# about code quality and professional practices.
+
 on:
   push:
-    branches: ["**"]       # Run on every branch push
+    branches: ["**"]        # Run on every branch push
   pull_request:
     branches: [main, develop]
 
@@ -19,22 +35,63 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install uv
+      - name: Install uv (fast package manager)
         run: pip install uv
 
-      - name: Create virtual environment & install dependencies
+      # CONCEPT: Caching in CI
+      # ----------------------
+      # Downloading packages takes time. Caching saves the downloaded files
+      # between runs. If nothing changed in pyproject.toml, uv reuses the
+      # cache and the install step completes in seconds instead of minutes.
+      - name: Cache uv packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: uv-${{ runner.os }}-
+
+      - name: Install dependencies
         run: |
           uv venv .venv
           source .venv/bin/activate
-          # Install only lightweight deps for CI (skip torch/opencv/mediapipe/ultralytics)
-          uv pip install pyyaml pytest pytest-cov ruff
 
+          # Group 1: Core data science (fast, ~100MB total)
+          uv pip install numpy pandas scikit-learn
+
+          # Group 2: OpenCV headless — "headless" = no GUI display libraries
+          # We use this in CI because there's no monitor/display server
+          # (the regular opencv-python would fail to import on a headless server)
+          uv pip install opencv-python-headless mediapipe
+
+          # Group 3: PyTorch CPU-only (~250MB vs 2.5GB GPU version)
+          # --index-url tells uv to download from PyTorch's own server
+          # which hosts the smaller CPU-only builds.
+          uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+          # Group 4: Dev tooling + experiment tracking
+          uv pip install pyyaml pytest pytest-cov ruff albumentations mlflow
+
+          # Group 5: local demo imports covered by smoke tests
+          uv pip install streamlit streamlit-webrtc
+
+      # CONCEPT: Ruff (linter)
+      # -----------------------
+      # Ruff checks your code for style issues and common mistakes WITHOUT
+      # running it. It's like a spell-checker for code.
+      # "ruff check ." scans every .py file in the project.
+      # If any file has unsorted imports, unused variables, etc. → CI fails.
       - name: Lint with ruff
         run: |
           source .venv/bin/activate
           ruff check .
 
-      - name: Run tests
+      # CONCEPT: Test coverage
+      # ----------------------
+      # --cov=src means "measure which lines in src/ were executed during tests"
+      # --cov-report=term-missing shows exactly which lines were NOT tested
+      # This tells you where to add more tests.
+      - name: Run tests with coverage
         run: |
           source .venv/bin/activate
-          pytest tests/ --cov=src --cov-report=term-missing -v
+          pytest tests/ -v --tb=short --cov=src --cov-report=term-missing
+

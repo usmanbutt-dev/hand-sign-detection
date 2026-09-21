@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local real-time ASL alphabet detector built with MediaPipe and a PyTorch Transformer.">
+  <title>Hand Sign Detection — Usman Butt</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Hand Sign Detection home">HSD<span>_</span></a>
+    <nav aria-label="Primary navigation">
+      <a href="#results">Results</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#run">Run locally</a>
+      <a class="nav-cta" href="https://github.com/usmanbutt-dev/hand-sign-detection">Source ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero reveal">
+      <div class="eyebrow"><span></span> Computer vision · Deep learning · Local-first</div>
+      <h1>Hands become<br><em>language.</em></h1>
+      <p class="hero-copy">A real-time, local ASL alphabet detector that turns 21 hand landmarks into a prediction with a compact PyTorch Transformer.</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#run">Run it locally</a>
+        <a class="button secondary" href="https://github.com/usmanbutt-dev/hand-sign-detection">Explore the code</a>
+      </div>
+      <div class="hero-stats" id="results">
+        <div><strong data-metric="test_accuracy">99.2%</strong><span>Held-out accuracy</span></div>
+        <div><strong>26</strong><span>ASL letter classes</span></div>
+        <div><strong>10,508</strong><span>Landmark samples</span></div>
+        <div><strong>404K</strong><span>Model parameters</span></div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="pipeline">
+      <div class="section-label">01 / System</div>
+      <div class="section-heading">
+        <h2>Geometry first.<br>Attention second.</h2>
+        <p>The runtime strips away backgrounds, lighting, and skin tone. The classifier sees only normalized hand geometry.</p>
+      </div>
+      <ol class="pipeline" aria-label="Inference pipeline">
+        <li><span>01</span><h3>Camera</h3><p>A webcam frame stays on the local machine.</p></li>
+        <li><span>02</span><h3>MediaPipe</h3><p>Detects one hand and extracts 21 three-dimensional landmarks.</p></li>
+        <li><span>03</span><h3>Normalize</h3><p>Centers coordinates on the wrist and removes scale.</p></li>
+        <li><span>04</span><h3>Transformer</h3><p>Attention learns relationships among finger joints.</p></li>
+        <li><span>05</span><h3>Predict</h3><p>Returns an A–Z label, confidence, and smoothed video result.</p></li>
+      </ol>
+    </section>
+
+    <section class="section results-grid reveal">
+      <div>
+        <div class="section-label">02 / Evaluation</div>
+        <h2>Measured, not estimated.</h2>
+        <p>The final checkpoint was selected on validation loss, then evaluated once on a held-out test split. A fixed seed makes the split reproducible.</p>
+        <dl class="metric-list">
+          <div><dt>Test accuracy</dt><dd data-metric="test_accuracy">99.2%</dd></div>
+          <div><dt>Best epoch</dt><dd data-metric="best_epoch">45</dd></div>
+          <div><dt>Test loss</dt><dd data-metric="test_loss">0.1060</dd></div>
+        </dl>
+      </div>
+      <figure class="matrix-card">
+        <img src="assets/confusion_matrix.png" alt="Row-normalized confusion matrix for 26 ASL alphabet classes">
+        <figcaption>Held-out confusion matrix · 526 test samples</figcaption>
+      </figure>
+    </section>
+
+    <section class="section reveal" id="run">
+      <div class="section-label">03 / Local demo</div>
+      <div class="run-card">
+        <div>
+          <h2>Your camera.<br>Your machine.</h2>
+          <p>The interactive demo runs locally with Streamlit. No frames are uploaded and no inference server is required.</p>
+        </div>
+        <pre><code><span># install</span>
+uv sync --extra dev
+
+<span># launch the interface</span>
+uv run streamlit run src/ui/streamlit_app.py
+
+<span># or use the low-overhead webcam loop</span>
+uv run python -m src.inference.realtime</code></pre>
+      </div>
+    </section>
+
+    <section class="section limitations reveal">
+      <div class="section-label">04 / Honest limits</div>
+      <h2>What this model does not claim.</h2>
+      <div class="limit-grid">
+        <p><strong>Static signs only.</strong> It classifies isolated frames, not continuous sign language or sentences.</p>
+        <p><strong>J and Z are constrained.</strong> Their full ASL forms involve motion that a single-frame representation cannot capture.</p>
+        <p><strong>One hand.</strong> The current pipeline intentionally classifies the first detected hand.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Designed and engineered by Usman Butt.</p>
+    <a href="https://github.com/usmanbutt-dev/hand-sign-detection">GitHub ↗</a>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

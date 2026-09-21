@@ -1,148 +1,161 @@
-# 🤟 Hand Sign Detection
+# Hand Sign Detection
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.4+-red?logo=pytorch)
-![YOLO26](https://img.shields.io/badge/YOLO26-Ultralytics-green)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-Tasks_API-orange)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-Transformer-EE4C2C?logo=pytorch&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-102%20passing-brightgreen)
+![CI](https://github.com/usmanbutt-dev/hand-sign-detection/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-**Real-time American Sign Language (ASL) detection using a hybrid YOLO26 + MediaPipe + Transformer pipeline.**
+**Local real-time ASL alphabet recognition using MediaPipe landmarks and a compact PyTorch Transformer.**
 
-<!-- Add demo GIF here in Phase 8 -->
+[Portfolio site](https://usmanbutt-dev.github.io/hand-sign-detection/) · [Architecture](#architecture) · [Run locally](#run-locally) · [Results](#results)
 
 </div>
 
----
+## Overview
 
-## 🎯 Overview
+The application recognizes 26 isolated ASL alphabet signs from a webcam or image. MediaPipe converts a detected hand into 21 three-dimensional landmarks; wrist-relative normalization removes position and scale; a 404K-parameter Transformer classifies the resulting geometry.
 
-This project detects **36 ASL hand signs** (26 letters + 10 digits) in real-time from a webcam using a three-stage hybrid pipeline:
+Inference runs locally. Camera frames are not uploaded, and GitHub Pages is an informational project site rather than a hosted inference service.
 
-1. **YOLO26** — detects and crops the hand in each frame
-2. **MediaPipe Tasks API** (`HandLandmarker`) — extracts 21 3D hand keypoints
-3. **PyTorch Transformer Classifier** — classifies the 63D keypoint vector into one of 36 signs
+## Results
 
-The result is a system that is robust to background clutter and lighting changes (because it classifies *hand geometry*, not pixels), served via a FastAPI backend and an interactive Streamlit demo.
+The final checkpoint was selected using validation loss and evaluated once on a held-out, stratified test split.
 
----
+| Metric | Result |
+|---|---:|
+| Dataset | 10,508 samples |
+| Classes | 26 (A–Z) |
+| Test samples | 526 |
+| Test accuracy | **99.24%** |
+| Test loss | 0.1060 |
+| Best epoch | 45 |
+| Parameters | 404,250 |
+| CPU training time | 13.7 minutes |
 
-## 🏗️ Architecture
+![Held-out confusion matrix](artifacts/confusion_matrix.png)
 
+Metrics are stored in [`artifacts/classifier_metrics.json`](artifacts/classifier_metrics.json). The versioned checkpoint includes its architecture, ordered labels, normalization identifier, validation metrics, and weights.
+
+## Architecture
+
+```text
+Webcam frame or image
+        │
+        ▼
+MediaPipe Hand Landmarker
+        │ 21 landmarks × (x, y, z)
+        ▼
+Wrist-relative, scale-invariant normalization
+        │ 63 values
+        ▼
+PyTorch Transformer encoder
+        │ probabilities for A–Z
+        ▼
+Confidence filter + temporal smoothing
+        │
+        ▼
+Streamlit interface or OpenCV webcam window
 ```
-Webcam / Image
-      │
-      ▼
- YOLO26n (hand detection)
-      │ bounding box crop
-      ▼
- MediaPipe HandLandmarker (Tasks API)
-      │ 21×3D landmarks → 63D vector
-      ▼
- PyTorch Transformer Classifier
-      │ class + confidence
-      ▼
- FastAPI /predict  OR  Streamlit live demo
-```
 
----
+The repository retains the earlier YOLO dataset and training experiment, but the finished runtime uses MediaPipe directly because no trained YOLO hand-detector checkpoint is required.
 
-## 📊 Results
+## Run locally
 
-> Results will be filled in after Phase 5 & 6 training.
-
-| Metric | Value |
-|---|---|
-| Test Accuracy | _TBD_ |
-| mAP@0.5 (hand detection) | _TBD_ |
-| Real-time FPS (CPU) | _TBD_ |
-| Real-time FPS (GPU) | _TBD_ |
-| API Latency | _TBD_ |
-
----
-
-## 🚀 Quick Start
+Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/), and a webcam for live mode.
 
 ```bash
-# 1. Clone
 git clone https://github.com/usmanbutt-dev/hand-sign-detection.git
 cd hand-sign-detection
 
-# 2. Install uv (if not installed)
-pip install uv
-
-# 3. Create virtualenv and install all dependencies
-uv venv .venv
-.venv\Scripts\activate      # Windows
-uv pip install -e ".[dev]"
-
-# 4. Run the Streamlit demo
-make run-app
-
-# 5. Or run the FastAPI server
-make run-api
+uv sync --extra dev
+uv run streamlit run src/ui/streamlit_app.py
 ```
 
----
+Open the URL printed by Streamlit. The committed classifier checkpoint is ready to use. MediaPipe downloads its approximately 8 MB hand-landmarker asset on first use if it is absent.
 
-## 📁 Project Structure
+For the lower-overhead OpenCV interface:
 
-```
-hand-sign-detection/
-├── .github/workflows/     # CI: lint + test on push
-├── configs/config.yaml    # All hyperparameters in one place
-├── data/                  # Raw images, keypoints, YOLO labels
-├── notebooks/             # Exploration & analysis notebooks
-├── src/
-│   ├── data/              # Dataset classes, augmentation, webcam capture
-│   ├── models/            # YOLO26, MediaPipe, Transformer wrappers
-│   ├── training/          # Training scripts
-│   ├── inference/         # End-to-end pipeline
-│   └── utils/             # Visualization, metrics
-├── api/main.py            # FastAPI inference server
-├── app/streamlit_app.py   # Streamlit demo
-└── tests/                 # Pytest test suite
+```bash
+uv run python -m src.inference.realtime
 ```
 
----
+Use another camera index when needed:
 
-## 🧠 Tech Stack
+```bash
+uv run python -m src.inference.realtime --camera 1
+```
 
-| Component | Tool | Version |
-|---|---|---|
-| Hand Detection | YOLO26 (Ultralytics) | Jan 2026 |
-| Hand Landmarks | MediaPipe Tasks API | ≥0.10.14 |
-| Classifier | PyTorch Transformer | 2.4+ |
-| Experiment Tracking | MLflow | 2.16+ |
-| API | FastAPI + Uvicorn | 0.115+ |
-| Demo | Streamlit | 1.39+ |
-| Model Export | ONNX | — |
+## Train the classifier
 
----
+The processed CSV is intentionally not stored in Git because it is approximately 13 MB. Follow the data preparation commands below when reproducing training from source.
 
-## 🗺️ Roadmap
+```bash
+# Download/prepare the landmark data
+uv run python scripts/run_prepare.py
 
-- [x] Phase 1: Project setup & Git workflow
-- [ ] Phase 2: Data collection & augmentation
-- [ ] Phase 3: YOLO26 hand detection training
-- [ ] Phase 4: MediaPipe keypoint extraction
-- [ ] Phase 5: Transformer classifier training
-- [ ] Phase 6: Full real-time inference pipeline
-- [ ] Phase 7: FastAPI + Streamlit deployment
-- [ ] Phase 8: Polish, demo GIF, v1.0.0 release
+# Train, evaluate, and generate artifacts
+uv run python -m src.training.train_classifier \
+  --epochs 50 --batch 256 --size small --patience 10
+```
 
----
+Training writes the checkpoint, JSON metrics, confusion matrix, training curve, and a local MLflow run.
 
-## 🔭 Future Work
+```bash
+uv run mlflow ui --port 5000
+```
 
-The current system handles **isolated static signs**. The 2026 research frontier has moved toward:
-- **Continuous Sign Language Recognition (CSLR)** — recognizing flowing, unsegmented signing
-- **CSLRTransformer** (CVPR 2026) — pose-only, end-to-end with graph convolutional encoders + RoPE Transformers
-- **SignGPT / SignLLMs** — LLM-based bi-directional translation between spoken and sign language
+## Tests and quality checks
 
----
+```bash
+uv run ruff check .
+uv run pytest -q
+uv run pytest --cov=src --cov-report=term-missing
+```
 
-## 📄 License
+CI runs linting and the complete test suite on every branch push and pull request.
 
-MIT — see [LICENSE](LICENSE)
+## Project structure
+
+```text
+artifacts/                      measured evaluation outputs
+configs/config.yaml             data, model, training, and inference settings
+docs/                           GitHub Pages portfolio site
+models/hand_sign_transformer.pt trained self-describing checkpoint
+src/data/                       collection, preparation, and landmark extraction
+src/models/transformer.py       landmark Transformer and checkpoint contract
+src/training/train_classifier.py training, evaluation, MLflow, and artifacts
+src/inference/                  shared predictor and OpenCV live loop
+src/ui/streamlit_app.py         local interactive interface
+tests/                          unit and integration tests
+```
+
+## Limitations
+
+- The classifier handles isolated static signs, not continuous signing or sentence translation.
+- ASL letters J and Z involve motion. Their dataset representations are static approximations, so the full gestures are not modeled.
+- Only the first detected hand is classified.
+- Reported accuracy measures the held-out landmark dataset; live results depend on camera angle, visibility, and distribution shift.
+
+## Roadmap
+
+- [x] **Phase 1** — project scaffold, Git workflow, and CI
+- [x] **Phase 2** — data pipeline and 10,508 landmark samples
+- [x] **Phase 3** — YOLO data/training experiment and MLflow support
+- [x] **Phase 4** — MediaPipe offline and live landmark extraction
+- [x] **Phase 5** — PyTorch Transformer training and held-out evaluation
+- [x] **Phase 6** — shared local real-time inference pipeline
+- [x] **Phase 7** — Streamlit and OpenCV local demos
+- [x] **Phase 8** — portfolio site, measured results, and documentation
+
+## Author
+
+**Muhammad Usman Butt** — [@usmanbutt-dev](https://github.com/usmanbutt-dev)
+
+Built as a portfolio project for AI/ML engineering roles.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
