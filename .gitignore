@@ -50,3 +50,7 @@ Thumbs.db
 
 # pytest
 .pytest_cache/
+
+# MediaPipe model weights
+models/*.task
+models/*.tflite
