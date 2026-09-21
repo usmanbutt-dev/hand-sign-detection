@@ -61,7 +61,7 @@ jobs:
           # Group 2: OpenCV headless — "headless" = no GUI display libraries
           # We use this in CI because there's no monitor/display server
           # (the regular opencv-python would fail to import on a headless server)
-          uv pip install opencv-python-headless
+          uv pip install opencv-python-headless mediapipe
 
           # Group 3: PyTorch CPU-only (~250MB vs 2.5GB GPU version)
           # --index-url tells uv to download from PyTorch's own server
