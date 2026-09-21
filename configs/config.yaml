@@ -9,7 +9,7 @@ data:
   val_split: 0.1
   test_split: 0.1
   image_size: 640           # YOLO input size
-  num_classes: 36           # 26 ASL letters + 10 digits
+  num_classes: 26           # Static ASL alphabet labels available in the dataset
   class_names:
     - A
     - B
@@ -37,16 +37,6 @@ data:
     - X
     - Y
     - Z
-    - "0"
-    - "1"
-    - "2"
-    - "3"
-    - "4"
-    - "5"
-    - "6"
-    - "7"
-    - "8"
-    - "9"
 
 # ─── YOLO26 Detection Model ─────────────────────────────────────────────────
 detector:
@@ -66,13 +56,13 @@ mediapipe:
 # ─── Transformer Classifier ─────────────────────────────────────────────────
 classifier:
   input_dim: 63             # 21 landmarks × 3 (x, y, z)
-  num_classes: 36
+  num_classes: 26
   d_model: 128              # Transformer embedding dimension
   nhead: 4                  # Attention heads
   num_layers: 2             # Transformer encoder layers
   dim_feedforward: 256
   dropout: 0.1
-  saved_model: "models/classifier.onnx"
+  saved_model: "models/hand_sign_transformer.pt"
 
 # ─── Training ───────────────────────────────────────────────────────────────
 training:

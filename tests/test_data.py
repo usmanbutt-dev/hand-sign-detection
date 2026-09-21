@@ -16,9 +16,11 @@ tiny fake images in a temporary directory.
 
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from src.data.dataset import (
+    ASL_CLASSES,
     CLASS_TO_IDX,
     CLASSES,
     IDX_TO_CLASS,
@@ -26,6 +28,8 @@ from src.data.dataset import (
     NUM_CLASSES,
     KeypointDataset,
     RawImageDataset,
+    read_class_names,
+    validate_class_names,
 )
 
 # ─── Class Mapping Tests ─────────────────────────────────────────────────────
@@ -33,16 +37,16 @@ from src.data.dataset import (
 class TestClassMapping:
     """Test that our class label mappings are consistent."""
 
-    def test_num_classes_is_36(self):
-        assert NUM_CLASSES == 36
+    def test_num_classes_matches_available_asl_alphabet(self):
+        assert NUM_CLASSES == 26
+        assert ASL_CLASSES == tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
     def test_classes_contains_all_letters(self):
         letters = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         assert letters.issubset(set(CLASSES))
 
-    def test_classes_contains_digits(self):
-        digits = {str(i) for i in range(10)}
-        assert digits.issubset(set(CLASSES))
+    def test_classes_do_not_claim_unavailable_digits(self):
+        assert set(CLASSES) == set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
     def test_class_to_idx_is_bijective(self):
         """Every class maps to a unique index (no two classes share an index)."""
@@ -54,9 +58,19 @@ class TestClassMapping:
         for cls, idx in CLASS_TO_IDX.items():
             assert IDX_TO_CLASS[idx] == cls
 
-    def test_indices_are_0_to_35(self):
+    def test_indices_are_contiguous(self):
         """Indices must be 0 to NUM_CLASSES-1 (no gaps)."""
         assert set(CLASS_TO_IDX.values()) == set(range(NUM_CLASSES))
+
+    def test_read_class_names_returns_sorted_unique_labels(self, tmp_path):
+        csv_path = tmp_path / "keypoints.csv"
+        pd.DataFrame({"class": ["C", "A", "B", "A"]}).to_csv(csv_path, index=False)
+
+        assert read_class_names(csv_path) == ("A", "B", "C")
+
+    def test_validate_class_names_rejects_missing_label(self):
+        with pytest.raises(ValueError, match="Dataset labels do not match"):
+            validate_class_names(tuple("ABCDEFGHIJKLMNOPQRSTUVWXY"))
 
 
 # ─── RawImageDataset Tests ───────────────────────────────────────────────────
@@ -78,8 +92,8 @@ class TestRawImageDataset:
         """
         import cv2
 
-        # Create fake images for 3 classes: A, B, 1
-        for cls in ["A", "B", "1"]:
+        # Create fake images for 3 classes: A, B, C
+        for cls in ["A", "B", "C"]:
             class_dir = tmp_path / cls
             class_dir.mkdir()
             for i in range(5):
@@ -90,7 +104,7 @@ class TestRawImageDataset:
         return tmp_path
 
     def test_dataset_loads_images(self, fake_data_dir):
-        ds = RawImageDataset(root_dir=fake_data_dir, classes=["A", "B", "1"])
+        ds = RawImageDataset(root_dir=fake_data_dir, classes=["A", "B", "C"])
         assert len(ds) == 15  # 3 classes × 5 images
 
     def test_dataset_returns_correct_type(self, fake_data_dir):
@@ -101,11 +115,11 @@ class TestRawImageDataset:
         assert len(ds) == 5
 
     def test_class_distribution(self, fake_data_dir):
-        ds = RawImageDataset(root_dir=fake_data_dir, classes=["A", "B", "1"])
+        ds = RawImageDataset(root_dir=fake_data_dir, classes=["A", "B", "C"])
         dist = ds.class_distribution()
         assert dist["A"] == 5
         assert dist["B"] == 5
-        assert dist["1"] == 5
+        assert dist["C"] == 5
 
     def test_missing_class_dir_is_skipped(self, fake_data_dir):
         """Dataset should not crash if a class directory doesn't exist."""

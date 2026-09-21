@@ -19,5 +19,5 @@ def test_config_has_required_sections():
 
 def test_num_classes():
     cfg = load_config()
-    assert cfg["data"]["num_classes"] == 36, "Expected 36 gesture classes (26 letters + 10 digits)"
-    assert len(cfg["data"]["class_names"]) == 36, "class_names list length must match num_classes"
+    assert cfg["data"]["num_classes"] == 26, "Expected the 26 available ASL letter classes"
+    assert len(cfg["data"]["class_names"]) == cfg["data"]["num_classes"]
