@@ -71,6 +71,9 @@ jobs:
           # Group 4: Dev tooling + experiment tracking
           uv pip install pyyaml pytest pytest-cov ruff albumentations mlflow
 
+          # Group 5: local demo imports covered by smoke tests
+          uv pip install streamlit streamlit-webrtc
+
       # CONCEPT: Ruff (linter)
       # -----------------------
       # Ruff checks your code for style issues and common mistakes WITHOUT
