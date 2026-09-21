@@ -423,6 +423,7 @@ def make_keypoint_dataloaders(
     batch_size: int = 64,
     val_fraction: float = 0.15,
     test_fraction: float = 0.05,
+    seed: int = 42,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Build train / val / test DataLoaders for keypoint data.
@@ -440,11 +441,11 @@ def make_keypoint_dataloaders(
     labels = [CLASS_TO_IDX[row] for row in full_dataset.data["class"]]
 
     train_idx, temp_idx = train_test_split(
-        indices, test_size=(val_fraction + test_fraction), random_state=42, stratify=labels
+        indices, test_size=(val_fraction + test_fraction), random_state=seed, stratify=labels
     )
     val_size = val_fraction / (val_fraction + test_fraction)
     val_idx, test_idx = train_test_split(
-        temp_idx, test_size=(1.0 - val_size), random_state=42,
+        temp_idx, test_size=(1.0 - val_size), random_state=seed,
         stratify=[labels[i] for i in temp_idx],
     )
 

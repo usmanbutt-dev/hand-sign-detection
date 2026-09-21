@@ -23,6 +23,11 @@ models/*.pt
 models/*.onnx
 models/*.pth
 mlruns/
+mlflow.db
+
+# Local agent indexes and execution ledgers
+.codegraph/
+.superpowers/
 
 # Data (raw data is large — document download steps in README)
 data/raw/*
