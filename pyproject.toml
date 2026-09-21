@@ -15,12 +15,9 @@ dependencies = [
     # Vision & Video
     "opencv-python>=4.10.0",
     "Pillow>=10.4.0",
-    # API
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.30.0",
-    "python-multipart>=0.0.9",  # FastAPI file upload
     # UI
     "streamlit>=1.39.0",
+    "streamlit-webrtc>=0.78.1",
     # Experiment tracking
     "mlflow>=2.16.0",
     # Data & Utils
