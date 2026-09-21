@@ -68,8 +68,8 @@ jobs:
           # which hosts the smaller CPU-only builds.
           uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-          # Group 4: Dev tooling
-          uv pip install pyyaml pytest pytest-cov ruff albumentations
+          # Group 4: Dev tooling + experiment tracking
+          uv pip install pyyaml pytest pytest-cov ruff albumentations mlflow
 
       # CONCEPT: Ruff (linter)
       # -----------------------
