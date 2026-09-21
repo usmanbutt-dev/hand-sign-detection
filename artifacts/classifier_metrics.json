@@ -1,0 +1,8 @@
+{
+  "best_epoch": 45,
+  "best_val_loss": 0.6746,
+  "best_val_accuracy": 0.9898,
+  "test_loss": 0.106,
+  "test_accuracy": 0.9924,
+  "train_time_min": 13.7
+}

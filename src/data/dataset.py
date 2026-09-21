@@ -59,17 +59,29 @@ from torch.utils.data import DataLoader, Dataset
 # This mapping MUST be identical during training and inference.
 # If it changes, the model's predictions will be completely wrong.
 
-CLASSES = [
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-    "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-    "U", "V", "W", "X", "Y", "Z",
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-]
+ASL_CLASSES: tuple[str, ...] = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+CLASSES = list(ASL_CLASSES)
 CLASS_TO_IDX: dict[str, int] = {cls: i for i, cls in enumerate(CLASSES)}
 IDX_TO_CLASS: dict[int, str] = {i: cls for cls, i in CLASS_TO_IDX.items()}
 
-NUM_CLASSES = len(CLASSES)       # 36
+NUM_CLASSES = len(CLASSES)       # 26
 KEYPOINT_DIM = 21 * 3            # 21 landmarks × (x, y, z) = 63 features
+
+
+def read_class_names(csv_path: str | Path) -> tuple[str, ...]:
+    """Return sorted, normalized class labels present in a keypoint CSV."""
+    labels = pd.read_csv(csv_path, usecols=["class"])["class"]
+    return tuple(sorted(labels.astype(str).str.upper().unique()))
+
+
+def validate_class_names(
+    actual: tuple[str, ...], expected: tuple[str, ...] = ASL_CLASSES
+) -> None:
+    """Fail before training when dataset labels differ from the model contract."""
+    if actual != expected:
+        raise ValueError(
+            f"Dataset labels do not match expected classes: actual={actual}, expected={expected}"
+        )
 
 
 # ─── Dataset 1: Raw Images ──────────────────────────────────────────────────
@@ -411,6 +423,7 @@ def make_keypoint_dataloaders(
     batch_size: int = 64,
     val_fraction: float = 0.15,
     test_fraction: float = 0.05,
+    seed: int = 42,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Build train / val / test DataLoaders for keypoint data.
@@ -428,11 +441,11 @@ def make_keypoint_dataloaders(
     labels = [CLASS_TO_IDX[row] for row in full_dataset.data["class"]]
 
     train_idx, temp_idx = train_test_split(
-        indices, test_size=(val_fraction + test_fraction), random_state=42, stratify=labels
+        indices, test_size=(val_fraction + test_fraction), random_state=seed, stratify=labels
     )
     val_size = val_fraction / (val_fraction + test_fraction)
     val_idx, test_idx = train_test_split(
-        temp_idx, test_size=(1.0 - val_size), random_state=42,
+        temp_idx, test_size=(1.0 - val_size), random_state=seed,
         stratify=[labels[i] for i in temp_idx],
     )
 
